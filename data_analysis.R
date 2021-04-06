@@ -4,7 +4,7 @@
 library(tidyverse)   #load tidyverse package 
 
 # Read --------------------------------------------------------------------
-table1 <- read_csv("~/Downloads/CRDT Data - CRDT.csv")  #read data 
+table1 <- read_csv("data/CRDT Data - CRDT.csv")  #read data 
 
 table1
 
