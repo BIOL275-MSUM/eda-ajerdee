@@ -9,56 +9,64 @@ table1 <- read_csv("data/CRDT Data - CRDT.csv")  #read data
 table1
 
 # Clean Data --------------------------------------------------------------
-group_by(table1, State)
 
-tableWhite <- summarize(table1, State, Cases_White, Deaths_White)  #Summary table of Whites
-
-tableWhite #Print table White summary
-
-tableBlack <- summarize(table1, State, Cases_Black, Deaths_Black)  #Summary table of Blacks
-
-tableBlack  #Print table Black Summary 
-
-tableLatinx <- summarize(table1, State, Cases_Latinx, Deaths_Latinx)  #summary table of Latinx
-
-tableLatinx  #Print table Latinx Summary
-
-tableAsian <- summarize(table1, State, Cases_Asian, Deaths_Asian)  #Summary table of Asian
-
-tableAsian #Print table Asian Summary
-
-tableAIAN <- summarize(table1, State, Cases_AIAN, Deaths_AIAN)   #Summary table of AIAN
-
-tableAIAN  #Print table AIAN Summary
-
-tableNHPI <- summarize(table1, State, Cases_NHPI, Deaths_NHPI)   #Summary table of NHPI
-
-tableNHPI  #Print table NHPI Summary
-
-tableMultiracial <- summarize(table1, State, Cases_Multiracial, Deaths_Multiracial)   #Summary table of Multiracial
-
-tableMultiracial  #Print table Multiracial Summary
-
-tableOther <- summarize(table1, State, Cases_Other, Deaths_Other)  #Summary table of Others
-
-tableOther  #Print table Other Summary
-
-tableUnknown <- summarize(table1, State, Cases_Unknown, Deaths_Unknown)  #Summary table of Unknown
-
-tableUnknown  #Print table Unknown Summary
-
-tableHispanic <- summarize(table1, State, Cases_Ethnicity_Hispanic, Deaths_Ethnicity_Hispanic)  #Summary table of Hispanic
-
-tableHispanic  #Print table Hispanic Summary
-
-tableNonHispanic <- summarize(table1, State, Cases_Ethnicity_NonHispanic, Deaths_Ethnicity_NonHispanic)  #Summary table of Nonhispanic
-
-tableNonHispanic  #Print table Nonhispanic Summary
+cleandata <-
+  table1 %>% 
+  rename(date = Date, state = State) %>% 
+  mutate(date = as.Date(as.character(date), format = "%Y%m%d")) %>% 
+  pivot_longer(
+    cols = !(date | state), 
+    names_to = "variable",
+    values_to = "num"
+  ) %>% 
+  separate(
+    col = variable, 
+    into = c("variable", "race"), 
+    sep = "_", 
+    extra = "merge"
+  ) %>% 
+  mutate(
+    variable = str_to_lower(variable), 
+    race = as_factor(race)
+  ) %>% 
+  pivot_wider(
+    id_cols = c(date, state, race),
+    names_from = variable,
+    values_from = num
+  )
 
 
 
+# plotting data -----------------------------------------------------------
 
+cleandata %>% 
+  filter(race == "Total") %>% 
+  pivot_longer(
+    cols = !(date | state | race), 
+    names_to = "variable",
+    values_to = "num"
+  ) %>% 
+  ggplot()+
+  geom_histogram(aes(x = num))+
+  facet_wrap(~ variable, scales = "free")+
+  labs(
+    x ="Number",
+    y = "Days/State",
+    title = "Distribution of Total Cases, Deaths, Hospitalizations, and Tests\nacross all Days and States"
+  )
 
+cleandata %>% 
+  filter(
+    state == "CA", 
+    !str_starts(race, "Ethnicity"), 
+    race != "Total",
+    ) %>% 
+  ggplot()+
+  geom_area(aes(x = date, y = deaths, fill = race))+
+  labs(
+    fill = "Race"
+  )
 
+  
 
 
